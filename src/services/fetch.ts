@@ -1,4 +1,5 @@
 import { Film, FilmSearchRequest } from '../types'
+import { getSearchCacheKey, cacheGet, cacheSet } from './cache'
 
 const postRequest = async (url: string, payload: any) => {
     const response = await fetch(url, {
@@ -12,14 +13,38 @@ const postRequest = async (url: string, payload: any) => {
     return await response.json()
 }
 
-export const searchVHS = (payload: FilmSearchRequest): Promise<[Film]> => {
-    return postRequest('https://vhs.service.com/search', payload)
+export const searchVHS = async (payload: FilmSearchRequest): Promise<[Film]> => {
+    const cacheKey = `VHS_SEARCH:${getSearchCacheKey(payload)}`
+    const cachedResult = cacheGet(cacheKey)
+    if (cachedResult) {
+        return cachedResult
+    }
+
+    const result = await postRequest('https://vhs.service.com/search', payload)
+    cacheSet(cacheKey, result)
+    return result
 }
 
 export const searchDVD = async (payload: FilmSearchRequest): Promise<[Film]> => {
-    return postRequest('https://dvd.service.com/search', payload)
+    const cacheKey = `DVD_SEARCH:${getSearchCacheKey(payload)}`
+    const cachedResult = cacheGet(cacheKey)
+    if (cachedResult) {
+        return cachedResult
+    }
+
+    const result = await postRequest('https://dvd.service.com/search', payload)
+    cacheSet(cacheKey, result)
+    return result
 }
 
 export const searchProjector = async (payload: FilmSearchRequest): Promise<[Film]> => {
-    return postRequest('https://prjktr.service.com/search', payload)
+    const cacheKey = `PROJECTOR_SEARCH:${getSearchCacheKey(payload)}`
+    const cachedResult = cacheGet(cacheKey)
+    if (cachedResult) {
+        return cachedResult
+    }
+
+    const result = await postRequest('https://prjktr.service.com/search', payload)
+    cacheSet(cacheKey, result)
+    return result
 }
